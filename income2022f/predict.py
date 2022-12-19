@@ -33,7 +33,7 @@ best = 0
 
 for md in {2, 3, 4, 5, 6, 7, 8} :
     for lr in {0.1, 0.3, 0.7, 0.9, 1} :
-        # for gamma in {0.1, 0.3, 0.7, 0.9, 1} :
+        # for gamma in {0.1, 0.3, 0.7, 0.9, 1} : 
             param = {'max_depth': md, 'eta': lr, 'objective': 'binary:hinge', 'eval_metric':'auc'}
             num_round = 10
 
@@ -50,9 +50,9 @@ for md in {2, 3, 4, 5, 6, 7, 8} :
             score = accuracy_score(y_train,train_pred)
             if score > best:
                 best = score
-                print('max depth=',md,' lr=',lr,' gamma=',gamma,' score=',score,' BEST!')
+                print('max depth=',md,' lr=',lr,' score=',score,' BEST!')
             else :
-                print('max depth=',md,' lr=',lr,' gamma=',gamma,' score=',score)
+                print('max depth=',md,' lr=',lr,' score=',score)
 
 # # train and save the testing label into csv file 
 # bst = xgb.train(param, dtrain, num_round)
