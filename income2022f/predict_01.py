@@ -1,6 +1,7 @@
 import numpy as np
 import xgboost as xgb
 import pandas as pd
+from sklearn.metrics import accuracy_score
 
 # attributes = ['age','workclass','fnlwgt','education','education.num','marital.status',
 #     'occupation','relationship','race','sex','capital.gain','capital.loss',
@@ -28,17 +29,37 @@ y_train = df_train['income>50K']
 dtrain = xgb.DMatrix(data=X_train, label=y_train)
 dtest = xgb.DMatrix(data=df_test.loc[:, df_test.columns != 'ID'])
 
-param = {'max_depth': 2, 'eta': 1, 'gamma': 1, 'objective': 'binary:logistic'}
-# evallist  = [(dtest,'evals'), (dtrain,'train')]
-num_round = 10
-bst = xgb.train(param, dtrain, num_round)
+best = 0
 
-prediction = bst.predict(dtest)
+for md in {2, 3, 4, 5, 6, 7, 8} :
+    for lr in {0.1, 0.3, 0.7, 0.9, 1} :
+        # for gamma in {0.1, 0.3, 0.7, 0.9, 1} :
+            param = {'max_depth': md, 'eta': lr, 'objective': 'binary:hinge', 'eval_metric':'auc'}
+            num_round = 10
 
-to_form = np.vstack((np.arange(1,prediction.shape[0]+1), prediction)).T
-to_form = pd.DataFrame(to_form)
-to_form = to_form.astype({0:'int'})
-to_form.to_csv('p01.csv', index=False, header  = ['ID', 'Prediction']) 
+            # # cross validation testing and output 
+            # print('max depth=',md,' lr=',lr)
+            # eval_hist = xgb.cv(param, dtrain, num_round, nfold=5, metrics={'auc'}, seed=0)
+            # print(eval_hist)
 
-# bst.save_model('0001.model')
+            # training score evaluation and output 
+            bst = xgb.train(param, dtrain, num_round)
 
+            # compute score on training data 
+            train_pred = bst.predict(dtrain)
+            score = accuracy_score(y_train,train_pred)
+            if score > best:
+                best = score
+                print('max depth=',md,' lr=',lr,' gamma=',gamma,' score=',score,' BEST!')
+            else :
+                print('max depth=',md,' lr=',lr,' gamma=',gamma,' score=',score)
+
+# # train and save the testing label into csv file 
+# bst = xgb.train(param, dtrain, num_round)
+
+# prediction = bst.predict(dtest)
+
+# to_form = np.vstack((np.arange(1,prediction.shape[0]+1), prediction)).T
+# to_form = pd.DataFrame(to_form)
+# to_form = to_form.astype({0:'int'})
+# to_form.to_csv('p05_hinge_auc.csv', index=False, header  = ['ID', 'Prediction'])
